@@ -1,0 +1,30 @@
+[project]
+name = "echolens"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+  "torch>=2.2",
+  "torchaudio>=2.2",
+  "numpy",
+  "soundata",
+  "librosa",
+  "scikit-learn",
+  "matplotlib",
+  "hydra-core",
+  "onnx>=1.16",
+  "onnxruntime>=1.20",
+]
+
+[project.optional-dependencies]
+dev = ["ruff", "mypy", "pytest"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
