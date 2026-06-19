@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 import numpy as np
 import soundata
@@ -7,12 +8,15 @@ from torch.utils.data import Dataset
 
 from echolens.features.melspec import wav_to_logmel, SR
 
+TRAINING_ROOT = Path(__file__).resolve().parents[3]  # .../training/
+DATA_HOME = str(TRAINING_ROOT / "data" / "urbansound8k")
+
 
 class UrbanSound8K(Dataset):
     """PyTorch Dataset over a subset of UrbanSound8K folds, with cached log-mel features."""
 
     def __init__(self, folds: list[int], cache_dir: str, augment: bool = False):
-        ds = soundata.initialize("urbansound8k", data_home="training/data/urbansound8k")
+        ds = soundata.initialize("urbansound8k", data_home=DATA_HOME)
         all_clips = ds.load_clips()
         self.clips = [c for c in all_clips.values() if c.fold in folds]
         self.cache_dir = cache_dir
@@ -33,6 +37,7 @@ class UrbanSound8K(Dataset):
         y, sr = clip.audio  # raw waveform + its native sample rate
         if sr != SR:
             import librosa
+
             y = librosa.resample(y, orig_sr=sr, target_sr=SR)
 
         logmel = wav_to_logmel(y.astype(np.float32))
@@ -44,7 +49,8 @@ class UrbanSound8K(Dataset):
         logmel = self._load_or_compute_logmel(clip)
 
         if self.augment:
-            from echolens.features.augment import spec_augment  # added in step 1.5
+            from echolens.features.augment import spec_augment  # avoids import at module load time
+
             logmel = spec_augment(logmel)
 
         x = torch.from_numpy(logmel).unsqueeze(0)  # (1, N_MELS, T)

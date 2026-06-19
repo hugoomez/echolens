@@ -23,7 +23,7 @@ def spec_augment(
         if f_width == 0 or f_width >= n_mels:
             continue
         f_start = np.random.randint(0, n_mels - f_width)
-        augmented[f_start:f_start + f_width, :] = mask_value
+        augmented[f_start : f_start + f_width, :] = mask_value
 
     # Time masking: blank out a few contiguous time frames
     for _ in range(n_time_masks):
@@ -31,7 +31,7 @@ def spec_augment(
         if t_width == 0 or t_width >= n_frames:
             continue
         t_start = np.random.randint(0, n_frames - t_width)
-        augmented[:, t_start:t_start + t_width] = mask_value
+        augmented[:, t_start : t_start + t_width] = mask_value
 
     return augmented
 

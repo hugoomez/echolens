@@ -32,10 +32,10 @@ def compute_norm_stats(folds: list[int], cache_dir: str) -> tuple[float, float]:
         x, _ = ds[i]
         x_np = x.numpy()
         total_sum += x_np.sum()
-        total_sq_sum += (x_np ** 2).sum()
+        total_sq_sum += (x_np**2).sum()
         total_count += x_np.size
     mean = total_sum / total_count
-    var = total_sq_sum / total_count - mean ** 2
+    var = total_sq_sum / total_count - mean**2
     std = float(np.sqrt(max(var, 1e-12)))
     return float(mean), std
 
@@ -57,6 +57,7 @@ def run_epoch(model, loader, device, mean, std, optimizer=None, mixup_alpha: flo
 
         if is_train and mixup_alpha > 0:
             from echolens.features.augment import mixup
+
             mixed_x, y_a, y_b, lam = mixup(x, y, alpha=mixup_alpha)
             logits = model(mixed_x)
             loss = lam * criterion(logits, y_a) + (1 - lam) * criterion(logits, y_b)
@@ -84,13 +85,17 @@ def train_one_split(train_folds, val_folds, cfg: DictConfig, log_path: str | Non
     train_ds = UrbanSound8K(train_folds, cfg.data.cache_dir, augment=cfg.train.augment)
     val_ds = UrbanSound8K(val_folds, cfg.data.cache_dir, augment=False)
 
-    train_loader = DataLoader(train_ds, batch_size=cfg.train.batch_size, shuffle=True, num_workers=0)
+    train_loader = DataLoader(
+        train_ds, batch_size=cfg.train.batch_size, shuffle=True, num_workers=0
+    )
     val_loader = DataLoader(val_ds, batch_size=cfg.train.batch_size, shuffle=False, num_workers=0)
 
     model = AudioCNN(n_classes=cfg.model.n_classes).to(device)
     print(f"[device check] training device = {device}")
     print(f"[device check] model parameters on = {next(model.parameters()).device}")
-    optimizer = torch.optim.Adam(model.parameters(), lr=cfg.train.lr, weight_decay=cfg.train.weight_decay)
+    optimizer = torch.optim.Adam(
+        model.parameters(), lr=cfg.train.lr, weight_decay=cfg.train.weight_decay
+    )
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=cfg.train.epochs)
 
     best_val_acc = 0.0
@@ -101,11 +106,14 @@ def train_one_split(train_folds, val_folds, cfg: DictConfig, log_path: str | Non
         writer.writerow(["epoch", "train_loss", "train_acc", "val_loss", "val_acc"])
 
     for epoch in range(cfg.train.epochs):
-        train_loss, train_acc = run_epoch(model, train_loader, device, mean, std, optimizer, mixup_alpha=0.2)
+        train_loss, train_acc = run_epoch(
+            model, train_loader, device, mean, std, optimizer, mixup_alpha=0.2
+        )
         val_loss, val_acc = run_epoch(model, val_loader, device, mean, std)
         scheduler.step()
-        print(f"  epoch {epoch+1}/{cfg.train.epochs} — train_loss={train_loss:.3f} train_acc={train_acc:.3f} val_loss={val_loss:.3f} val_acc={val_acc:.3f}")
-	
+        print(
+            f"  epoch {epoch + 1}/{cfg.train.epochs} — train_loss={train_loss:.3f} train_acc={train_acc:.3f} val_loss={val_loss:.3f} val_acc={val_acc:.3f}"
+        )
 
         if writer:
             writer.writerow([epoch, train_loss, train_acc, val_loss, val_acc])
@@ -131,7 +139,9 @@ def main(cfg: DictConfig) -> None:
     fold_accuracies = []
     for k in ALL_FOLDS:
         train_folds = [f for f in ALL_FOLDS if f != k]
-        acc, _, _, _ = train_one_split(train_folds, [k], cfg, log_path=f"training/logs/fold_{k}.csv")
+        acc, _, _, _ = train_one_split(
+            train_folds, [k], cfg, log_path=f"training/logs/fold_{k}.csv"
+        )
         print(f"Fold {k}: val accuracy = {acc:.4f}")
         fold_accuracies.append(acc)
 
