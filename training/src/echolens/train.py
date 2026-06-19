@@ -84,10 +84,12 @@ def train_one_split(train_folds, val_folds, cfg: DictConfig, log_path: str | Non
     train_ds = UrbanSound8K(train_folds, cfg.data.cache_dir, augment=cfg.train.augment)
     val_ds = UrbanSound8K(val_folds, cfg.data.cache_dir, augment=False)
 
-    train_loader = DataLoader(train_ds, batch_size=cfg.train.batch_size, shuffle=True, num_workers=2)
-    val_loader = DataLoader(val_ds, batch_size=cfg.train.batch_size, shuffle=False, num_workers=2)
+    train_loader = DataLoader(train_ds, batch_size=cfg.train.batch_size, shuffle=True, num_workers=0)
+    val_loader = DataLoader(val_ds, batch_size=cfg.train.batch_size, shuffle=False, num_workers=0)
 
     model = AudioCNN(n_classes=cfg.model.n_classes).to(device)
+    print(f"[device check] training device = {device}")
+    print(f"[device check] model parameters on = {next(model.parameters()).device}")
     optimizer = torch.optim.Adam(model.parameters(), lr=cfg.train.lr, weight_decay=cfg.train.weight_decay)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=cfg.train.epochs)
 
@@ -102,6 +104,8 @@ def train_one_split(train_folds, val_folds, cfg: DictConfig, log_path: str | Non
         train_loss, train_acc = run_epoch(model, train_loader, device, mean, std, optimizer, mixup_alpha=0.2)
         val_loss, val_acc = run_epoch(model, val_loader, device, mean, std)
         scheduler.step()
+        print(f"  epoch {epoch+1}/{cfg.train.epochs} — train_loss={train_loss:.3f} train_acc={train_acc:.3f} val_loss={val_loss:.3f} val_acc={val_acc:.3f}")
+	
 
         if writer:
             writer.writerow([epoch, train_loss, train_acc, val_loss, val_acc])
@@ -118,7 +122,7 @@ def train_one_split(train_folds, val_folds, cfg: DictConfig, log_path: str | Non
     return best_val_acc, model, mean, std
 
 
-@hydra.main(config_path="../../../configs", config_name="baseline", version_base=None)
+@hydra.main(config_path="../../configs", config_name="baseline", version_base=None)
 def main(cfg: DictConfig) -> None:
     set_seed(cfg.seed)
     os.makedirs("training/logs", exist_ok=True)
