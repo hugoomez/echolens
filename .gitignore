@@ -7,7 +7,6 @@ __pycache__/
 .pytest_cache/
 *.egg-info/
 # datos y artefactos pesados
-data/
 training/data/
 *.ckpt
 *.pth
