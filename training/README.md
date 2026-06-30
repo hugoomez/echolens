@@ -122,3 +122,23 @@ Dataset-dependent tests skip automatically if `data/urbansound8k/` isn't
 
 present (e.g., in CI).
 
+## Export to ONNX
+
+From the repo root:
+```bash
+python -c "from echolens.export_onnx import export_fp32 as e; e('training/checkpoint_best.pt', 'model_fp32.onnx')"
+python -c "import onnx; m=onnx.load('model_fp32.onnx'); onnx.checker.check_model(m); print('ONNX valid')"
+```
+
+## Quantization (evaluated, not used)
+
+INT8 static quantization was implemented and measured, but rejected —
+see `docs/adr/ADR-0004-int8-quantization.md`. Only the FP32 ONNX model
+ships to `web/public/models/model.onnx`.
+
+To reproduce the quantization experiment:
+```bash
+python -m onnxruntime.quantization.preprocess --input model_fp32.onnx --output model_prep.onnx --skip_symbolic_shape True
+python scripts/run_quantization.py
+python -m echolens.evaluate_onnx
+```

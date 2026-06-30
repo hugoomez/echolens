@@ -34,3 +34,18 @@
 | 8 | 0.7407 |
 | 9 | 0.8321 |
 | 10 | 0.8734 |
+
+## ONNX export and quantization (Phase 2)
+
+| Model | Format | Size | Accuracy (fold 10) |
+|-------|--------|------|---------------------|
+| FP32  | ONNX (opset 18) | 36 KB  | 0.8614 |
+| INT8  | ONNX (QDQ, per-channel) | 330 KB | 0.8519 |
+
+**Decision: ship FP32 only.** INT8 quantization was implemented and
+measured, but made the model ~9x larger (not smaller) and lost 0.96
+accuracy points. The model is small enough that quantization overhead
+outweighs any storage/speed benefit. See `ADR-0004` for full reasoning.
+
+PyTorch vs ONNX (FP32) parity: verified within `rtol=1e-3, atol=1e-4`
+(`test_onnx_parity.py`).
