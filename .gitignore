@@ -20,3 +20,6 @@ web/dist/
 .DS_Store
 .idea/
 .vscode/
+# Intermediate ONNX export artifacts (regenerable, not the shipped model)
+model_fp32.onnx
+model_prep.onnx

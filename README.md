@@ -7,7 +7,7 @@ PyTorch -> ONNX -> onnxruntime-web . Web Audio API / AudioWorklet . WebAssembly
 
 * \[X] Fase 0 . Setup
 * \[X] Fase 1 . Modelo baseline
-* \[ ] Fase 2 . ONNX + cuantizacion
+* \[X] Fase 2 . ONNX + cuantizacion
 * \[ ] Fase 3 . Inferencia en navegador
 * \[ ] Fase 4 . Tiempo real + UI
 * \[ ] Fase 5 . Benchmarks
